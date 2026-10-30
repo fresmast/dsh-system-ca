@@ -2,6 +2,8 @@
 
 Make [DeepSeek Harness](https://github.com/deepseek-ai) (DSH) **trust the operating system certificate store** inside its host process.
 
+> Designed and written by the coding agent inside DSH (DeepSeek Harness, `deepseek-flash`), commissioned and tested by [@fresmast](https://github.com/fresmast). Every design decision here — merging CA lists at boot instead of fiddling with `NODE_OPTIONS`, shipping as a runtime plugin, and avoiding `node_modules` for the source copy — came out of measured experiments on a Windows machine whose `hosts` file was hijacked by a local TLS-terminating accelerator.
+
 ## Why
 
 Node.js ships its own compiled-in root CA list (~121 roots) and ignores the OS trust store. If your machine reaches the internet through something that terminates TLS locally — a proxy, a GitHub accelerator, Steam++ / Watt Toolkit, Clash, a corporate MITM gateway — DSH's `web_fetch` fails with:
@@ -25,7 +27,7 @@ Typical boot log:
 
 ```powershell
 # in the DSH app directory, or wherever dsh.cmd lives
-dsh plugin --profile desktop add github:<your-name>/dsh-system-ca
+dsh plugin --profile desktop add github:fresmast/dsh-system-ca
 ```
 
 Then append the mount to `%USERPROFILE%\.dsh\profiles\desktop\cordis.patch.yml`:
@@ -42,11 +44,11 @@ and fully restart DSH.
 
 This package declares `dsh.bundle.patch`, so once DSH records it in the profile's `dsh.profile.bundles` list, its `cordis.patch.yml` is activated automatically. Installing through the DSH plugin market does both steps for you.
 
-### Option C — manual, offline
+### Option C — manual / offline
 
 ```powershell
 $dir = Join-Path $HOME '.dsh\plugins\dsh-system-ca'
-git clone https://github.com/<your-name>/dsh-system-ca $dir
+git clone https://github.com/fresmast/dsh-system-ca $dir
 # or: copy this folder there
 ```
 
